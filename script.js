@@ -1,40 +1,208 @@
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
+(() => {
+  const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
+  const ACCEPTED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "heic", "mp4", "mov"]);
 
-const ALLOWED_EXTENSIONS = [
-  "jpg",
-  "jpeg",
-  "png",
-  "heic",
-  "mp4",
-  "mov"
-];
+  const endpoint = window.WEDDING_UPLOAD_ENDPOINT || "/api/upload";
+  const eventName = window.WEDDING_EVENT_NAME || "Mia & Srđan — Wedding Memories";
+  const eventDate = window.WEDDING_EVENT_DATE || "2026-08-21";
 
-const FALLBACK_UPLOAD_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbxEv1xZ7NOzJX_8IWdwh0VrVbw_3N1W89hFIAPsK6vmSkQVAS3j84_VpBCsyE3mKls3/exec";
+  const form = document.getElementById("uploadForm");
+  const fileInput = document.getElementById("fileInput");
+  const dropZone = document.getElementById("dropZone");
+  const browseBtn = document.getElementById("browseBtn");
+  const fileList = document.getElementById("fileList");
+  const statusMessage = document.getElementById("statusMessage");
+  const submitBtn = document.getElementById("submitBtn");
+  const progressWrap = document.getElementById("progressWrap");
+  const progressBar = document.getElementById("progressBar");
+  const progressPercent = document.getElementById("progressPercent");
+  const qrImage = document.getElementById("qrImage");
 
-const fileInput = document.querySelector("#fileInput");
-const dropZone = document.querySelector("#dropZone");
-const uploadForm = document.querySelector("#uploadForm");
-const uploadButton = document.querySelector("#uploadButton");
-const clearFilesButton = document.querySelector("#clearFiles");
-const fileSummary = document.querySelector("#fileSummary");
-const fileCount = document.querySelector("#fileCount");
-const totalSize = document.querySelector("#totalSize");
-const fileList = document.querySelector("#fileList");
-const progressWrap = document.querySelector("#progressWrap");
-const progressBar = document.querySelector("#progressBar");
-const progressLabel = document.querySelector("#progressLabel");
-const progressPercent = document.querySelector("#progressPercent");
-const statusMessage = document.querySelector("#statusMessage");
-const qrImage = document.querySelector("#qrImage");
-const qrUrl = document.querySelector("#qrUrl");
+  let selectedFiles = [];
 
-let selectedFiles = [];
-let uploadEndpoint = FALLBACK_UPLOAD_ENDPOINT;
+  function bytesToMb(bytes) {
+    return (bytes / (1024 * 1024)).toFixed(2);
+  }
 
-init();
+  function getExt(filename) {
+    const idx = filename.lastIndexOf(".");
+    return idx > -1 ? filename.slice(idx + 1).toLowerCase() : "";
+  }
 
-function init() {
+  function setStatus(message, type = "") {
+    statusMessage.textContent = message;
+    statusMessage.classList.remove("ok", "error");
+    if (type) statusMessage.classList.add(type);
+  }
+
+  function clearProgress() {
+    progressBar.style.width = "0%";
+    progressPercent.textContent = "0%";
+    progressWrap.classList.remove("show");
+    progressWrap.setAttribute("aria-hidden", "true");
+  }
+
+  function showProgress() {
+    progressWrap.classList.add("show");
+    progressWrap.setAttribute("aria-hidden", "false");
+  }
+
+  function renderFiles() {
+    fileList.innerHTML = "";
+
+    if (!selectedFiles.length) return;
+
+    selectedFiles.forEach((file, idx) => {
+      const li = document.createElement("li");
+      li.className = "file-item";
+      li.innerHTML = `
+        <span>${file.name}</span>
+        <span>${bytesToMb(file.size)} MB</span>
+      `;
+      li.dataset.index = String(idx);
+      fileList.appendChild(li);
+    });
+  }
+
+  function validateFiles(files) {
+    const valid = [];
+    const errors = [];
+
+    files.forEach((file) => {
+      const ext = getExt(file.name);
+
+      if (!ACCEPTED_EXTENSIONS.has(ext)) {
+        errors.push(`Fajl \"${file.name}\" nije podržan format.`);
+        return;
+      }
+
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        errors.push(`Fajl \"${file.name}\" prelazi 50MB.`);
+        return;
+      }
+
+      valid.push(file);
+    });
+
+    return { valid, errors };
+  }
+
+  function addFiles(fileLikeList) {
+    const incoming = Array.from(fileLikeList || []);
+    if (!incoming.length) return;
+
+    const { valid, errors } = validateFiles(incoming);
+
+    if (errors.length) {
+      setStatus(errors.join(" "), "error");
+    } else {
+      setStatus("");
+    }
+
+    if (!valid.length) return;
+
+    selectedFiles = [...selectedFiles, ...valid];
+    renderFiles();
+  }
+
+  function resetSelection() {
+    selectedFiles = [];
+    fileInput.value = "";
+    renderFiles();
+  }
+
+  function uploadWithProgress(formData) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", endpoint, true);
+
+      xhr.upload.onprogress = (event) => {
+        if (!event.lengthComputable) return;
+        const percent = Math.round((event.loaded / event.total) * 100);
+        progressBar.style.width = `${percent}%`;
+        progressPercent.textContent = `${percent}%`;
+      };
+
+      xhr.onload = () => {
+        const ok = xhr.status >= 200 && xhr.status < 300;
+        if (ok) {
+          resolve({ status: xhr.status, body: xhr.responseText });
+        } else {
+          reject(new Error(`Server je vratio status ${xhr.status}.`));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error("Greška mreže tokom upload-a."));
+      xhr.send(formData);
+    });
+  }
+
+  async function onSubmit(event) {
+    event.preventDefault();
+
+    if (!selectedFiles.length) {
+      setStatus("Odaberite barem jedan fajl prije slanja.", "error");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    browseBtn.disabled = true;
+    showProgress();
+    setStatus("Slanje fajlova...", "");
+
+    const formData = new FormData();
+    selectedFiles.forEach((file) => formData.append("files", file));
+    formData.append("eventName", eventName);
+    formData.append("eventDate", eventDate);
+
+    try {
+      await uploadWithProgress(formData);
+      setStatus("Hvala! Uspješno ste poslali uspomene. 🤍", "ok");
+      resetSelection();
+    } catch (err) {
+      setStatus(err.message || "Upload nije uspio. Pokušajte ponovo.", "error");
+    } finally {
+      submitBtn.disabled = false;
+      browseBtn.disabled = false;
+      setTimeout(clearProgress, 400);
+    }
+  }
+
+  function buildQr() {
+    const url = window.location.href;
+    const qrEndpoint = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=";
+    qrImage.src = `${qrEndpoint}${encodeURIComponent(url)}`;
+  }
+
+  browseBtn.addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", (e) => addFiles(e.target.files));
+
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("dragover");
+  });
+
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("dragover");
+    addFiles(e.dataTransfer.files);
+  });
+
+  dropZone.addEventListener("click", () => fileInput.click());
+  dropZone.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
+
+  form.addEventListener("submit", onSubmit);
+
+  buildQr();
+  clearProgress();
+})();function init() {
 
   setupDragAndDrop();
 
