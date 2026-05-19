@@ -1,40 +1,90 @@
 <!DOCTYPE html>
 <html lang="sr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Tijana & Milenko — Wedding Memories. Upload fotografija i video uspomena sa venčanja 10.10.2026.">
-  <title>Tijana & Milenko — Wedding Memories</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Mia & Srđan — Wedding Memories. Upload fotografija i video uspomena sa venčanja 21.08.2026." />
+  <title>Mia & Srđan — Wedding Memories</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="page-shell">
-    <header class="hero section" id="top">
-      <nav class="nav" aria-label="Glavna navigacija">
-      </nav>
+  <main class="page">
+    <section class="hero" aria-label="Wedding hero section">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <p class="eyebrow">Wedding Memories</p>
+        <h1 class="hero-title">Mia <span>&amp;</span> Srđan</h1>
+        <p class="hero-date">21.08.2026.</p>
+      </div>
+    </section>
 
-      <div class="hero-grid">
-        <div class="hero-content">
-          <p class="eyebrow">10.10.2026.</p>
-          <h1>Tijana 
-            &amp; 
-            Milenko</h1>
-          <p class="subtitle">Wedding Memories</p>
-          <p class="hero-copy">
-            Hvala što ste dio našeg dana. 
-            Podijelite sa nama fotografije i video 
-            uspomene koje ste 
-            zabilježili tokom slavlja — 
-            svaki osmijeh, ples i 
-            trenutak nam znači.
-          </p>
-          <div class="hero-actions">
-            <a class="button button-primary" href="#upload">Dodaj uspomene</a>
-            <a class="button button-secondary" href="#qr">Otvori QR kod</a>
+    <section class="card" aria-label="Upload card">
+      <div class="card-header">
+        <p class="card-kicker">Dobrodošli</p>
+        <p class="card-names">Mia<br />&amp;<br />Srđan</p>
+        <p class="card-date">21.08.2026.</p>
+      </div>
+
+      <div class="instructions">
+        <h2>Podijelite uspomene</h2>
+        <p>
+          Hvala što ste dio našeg dana. Ovdje možete jednostavno uploadovati fotografije i video zapise sa vjenčanja.
+          Svaka uspomena nam mnogo znači. 🤍
+        </p>
+      </div>
+
+      <form id="uploadForm" class="upload" novalidate>
+        <input
+          id="fileInput"
+          name="files"
+          type="file"
+          multiple
+          accept="image/jpeg,image/jpg,image/png,image/heic,video/mp4,video/quicktime,.heic,.mov"
+          hidden
+        />
+
+        <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Izaberite ili prevucite fajlove za upload">
+          <p class="drop-title">Prevucite fajlove ovdje</p>
+          <p class="drop-subtitle">ili</p>
+          <button id="browseBtn" type="button" class="btn btn-primary">Odaberi fajlove</button>
+          <p class="drop-hint">Do 50MB po fajlu • JPG, PNG, HEIC, MP4, MOV</p>
+        </div>
+
+        <ul id="fileList" class="file-list" aria-live="polite"></ul>
+
+        <div id="progressWrap" class="progress-wrap" aria-hidden="true">
+          <div class="progress-meta">
+            <span>Upload u toku...</span>
+            <span id="progressPercent">0%</span>
           </div>
+          <div class="progress-track">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+        </div>
+
+        <p id="statusMessage" class="status" aria-live="polite"></p>
+
+        <button id="submitBtn" type="submit" class="btn btn-submit">Pošalji uspomene</button>
+      </form>
+
+      <div class="qr-block" aria-label="QR code section">
+        <p>Skenirajte QR kod i otvorite stranicu na telefonu</p>
+        <img id="qrImage" src="" alt="QR kod za Mia & Srđan wedding memories stranicu" />
+      </div>
+    </section>
+  </main>
+
+  <script>
+    window.WEDDING_UPLOAD_ENDPOINT = "https://script.google.com/macros/s/AKfycbyoKlTayU2QBqCCtOGhXMuLhT7M5tSId9-QXdoRvmNkiRK6KLdtr5VuqE5Yfmc8HxN8/exec";
+    window.WEDDING_EVENT_NAME = "Mia & Srđan — Wedding Memories";
+    window.WEDDING_EVENT_DATE = "2026-08-21";
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>          </div>
         </div>
         <div class="hero-card" aria-label="Detalji venčanja">
           <span class="card-flourish" aria-hidden="true">✦</span>
