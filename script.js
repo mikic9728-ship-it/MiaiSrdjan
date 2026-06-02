@@ -121,11 +121,75 @@ function resetUploadState() {
   progressWrap.hidden = true;
 }
 
-function uploadFiles() {
+async function uploadFiles() {
   if (!uploadEndpoint) {
-    setStatus('Upload endpoint nije podešen. Dodajte WEDDING_UPLOAD_ENDPOINT iz .env konfiguracije prije objave sajta.', 'error');
+    setStatus('Upload endpoint nije podešen.', 'error');
     return;
   }
+
+  uploadButton.disabled = true;
+  setStatus('Upload je počeo. Molimo ne zatvarajte stranicu.', '');
+  setProgress(0);
+
+  try {
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+
+      setProgress(
+        Math.round((i / selectedFiles.length) * 100),
+        `Upload: ${file.name}`
+      );
+
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.readAsDataURL(file);
+
+        reader.onload = () => {
+          resolve(reader.result.split(',')[1]);
+        };
+
+        reader.onerror = reject;
+      });
+
+      const response = await fetch(uploadEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: file.name,
+          type: file.type,
+          file: base64
+        })
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || 'Upload error');
+      }
+    }
+
+    setProgress(100, 'Upload završen');
+
+    setStatus(
+      'Hvala! Vaše uspomene su uspješno uploadovane ❤️',
+      'success'
+    );
+
+    selectedFiles = [];
+    fileInput.value = '';
+    renderFiles();
+
+  } catch (error) {
+    console.error(error);
+
+    setStatus(
+      'Upload nije uspio. Pokušajte ponovo.',
+      'error'
+    );
+  }
+
+  uploadButton.disabled = false;
+}
 
   const formData = new FormData();
   selectedFiles.forEach((file) => formData.append('files', file, file.name));
