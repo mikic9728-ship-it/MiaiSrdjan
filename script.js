@@ -8,8 +8,9 @@ const ALLOWED_MIME_TYPES = new Set([
   'video/mp4',
   'video/quicktime'
 ]);
-
-const uploadEndpoint = window.WEDDING_UPLOAD_ENDPOINT || '';
+const uploadEndpoint =
+  window.WEDDING_UPLOAD_ENDPOINT ||
+  'https://script.google.com/macros/s/AKfycbyoKlTayU2QBqCCtOGhXMuLhT7M5tSId9-QXdoRvmNkiRK6KLdtr5VuqE5Yfmc8HxN8/exec';
 const siteUrl = window.WEDDING_SITE_URL || window.location.href.split('#')[0];
 
 const form = document.querySelector('#uploadForm');
