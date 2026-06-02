@@ -9,8 +9,7 @@ const ALLOWED_MIME_TYPES = new Set([
   'video/quicktime'
 ]);
 const uploadEndpoint =
-  window.WEDDING_UPLOAD_ENDPOINT ||
-  'https://script.google.com/macros/s/AKfycbyoKlTayU2QBqCCtOGhXMuLhT7M5tSId9-QXdoRvmNkiRK6KLdtr5VuqE5Yfmc8HxN8/exec';
+  "https://script.google.com/macros/s/AKfycbwAE5I4RhEhhHBtA93ELRyFvB8sRIHMX_nppYcsT9qaT3kBkNn6y8rcBln2T7l_xgR17g/exec";
 const siteUrl = window.WEDDING_SITE_URL || window.location.href.split('#')[0];
 
 const form = document.querySelector('#uploadForm');
