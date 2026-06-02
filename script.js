@@ -191,43 +191,7 @@ async function uploadFiles() {
   uploadButton.disabled = false;
 }
 
-  const formData = new FormData();
-  selectedFiles.forEach((file) => formData.append('files', file, file.name));
-
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', uploadEndpoint, true);
-
-  xhr.upload.addEventListener('progress', (event) => {
-    if (event.lengthComputable) {
-      setProgress((event.loaded / event.total) * 100);
-    }
-  });
-
-  xhr.addEventListener('load', () => {
-    uploadButton.disabled = false;
-
-    if (xhr.status >= 200 && xhr.status < 300) {
-      setProgress(100, 'Upload završen');
-      setStatus('Hvala! Vaše uspomene su uspješno uploadovane u Mia & Srđan galeriju.', 'success');
-      selectedFiles = [];
-      fileInput.value = '';
-      renderFiles();
-      return;
-    }
-
-    setStatus('Upload nije uspio. Molimo pokušajte ponovo za nekoliko trenutaka.', 'error');
-  });
-
-  xhr.addEventListener('error', () => {
-    uploadButton.disabled = false;
-    setStatus('Došlo je do mrežne greške tokom upload-a. Provjerite konekciju i pokušajte ponovo.', 'error');
-  });
-
-  uploadButton.disabled = true;
-  setStatus('Upload je počeo. Molimo ne zatvarajte stranicu.', '');
-  setProgress(0);
-  xhr.send(formData);
-}
+  
 
 function setupQrCode() {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=640x640&margin=24&data=${encodeURIComponent(siteUrl)}`;
