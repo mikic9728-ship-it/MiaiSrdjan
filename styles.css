@@ -537,3 +537,15 @@ h3 {
     flex-direction: column;
   }
 }
+.hero-image {
+  width: 100%;
+  max-width: 800px;
+  border-radius: 24px;
+  display: block;
+  margin-bottom: 25px;
+  box-shadow: var(--shadow);
+}
+
+.hero-content {
+  max-width: 900px;
+}
