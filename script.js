@@ -58,7 +58,19 @@ function renderFiles() {
 }
 
 function addFiles(files) {
-  selectedFiles.push(...Array.from(files));
+  const newFiles = Array.from(files);
+
+  for (const file of newFiles) {
+    if (file.size > MAX_FILE_SIZE) {
+      setStatus(
+        `${file.name} je veći od 50 MB.`,
+        'error'
+      );
+      return;
+    }
+  }
+
+  selectedFiles.push(...newFiles);
   renderFiles();
 
   if (selectedFiles.length) {
@@ -83,8 +95,9 @@ async function uploadFiles() {
       const base64 = await new Promise((resolve, reject) => {
         const reader = new FileReader();
 
-        reader.onload = () =>
+        reader.onload = () => {
           resolve(reader.result.split(',')[1]);
+        };
 
         reader.onerror = reject;
 
@@ -102,13 +115,24 @@ async function uploadFiles() {
 
       const text = await response.text();
 
-console.log(text);
-setStatus(text);
+      console.log('SERVER ODGOVOR:', text);
 
-const result = JSON.parse(text);
+      setStatus('Server odgovorio: ' + text);
+
+      let result;
+
+      try {
+        result = JSON.parse(text);
+      } catch (jsonError) {
+        throw new Error('Server nije vratio JSON: ' + text);
+      }
 
       if (!result.success) {
-        throw new Error(result.message || 'Upload error');
+        throw new Error(
+          result.message ||
+          result.error ||
+          'Nepoznata greška servera'
+        );
       }
     }
 
@@ -127,7 +151,7 @@ const result = JSON.parse(text);
     console.error(err);
 
     setStatus(
-      'Upload nije uspio.',
+      'GREŠKA: ' + err.toString(),
       'error'
     );
   }
@@ -174,6 +198,7 @@ clearFilesButton.addEventListener('click', () => {
   selectedFiles = [];
   fileInput.value = '';
   renderFiles();
+  setStatus('');
 });
 
 form.addEventListener('submit', (event) => {
