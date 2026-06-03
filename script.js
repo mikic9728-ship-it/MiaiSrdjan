@@ -102,8 +102,6 @@ async function uploadFiles() {
 
       const text = await response.text();
 
-alert(text);
-
 console.log(text);
 
 const result = JSON.parse(text);
