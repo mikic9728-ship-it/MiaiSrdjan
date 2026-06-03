@@ -104,6 +104,8 @@ async function uploadFiles() {
 
 alert(text);
 
+console.log(text);
+
 const result = JSON.parse(text);
 
       if (!result.success) {
