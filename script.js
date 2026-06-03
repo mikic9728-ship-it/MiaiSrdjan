@@ -93,19 +93,34 @@ async function uploadFiles() {
       );
 
       const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
+  const reader = new FileReader();
 
-        reader.onload = () => {
-          resolve(reader.result.split(',')[1]);
-        };
+  reader.onloadend = () => {
+    if (!reader.result) {
+      reject(new Error('Fajl nije učitan'));
+      return;
+    }
 
-        reader.onerror = (e) => {
-  console.log('FILE ERROR', e);
-  reject(new Error(JSON.stringify(e)));
-};
+    const parts = String(reader.result).split(',');
 
-        reader.readAsDataURL(file);
-      });
+    if (parts.length < 2) {
+      reject(new Error('Neispravan format fajla'));
+      return;
+    }
+
+    resolve(parts[1]);
+  };
+
+  reader.onerror = () => {
+    reject(new Error('FileReader greška'));
+  };
+
+  reader.onabort = () => {
+    reject(new Error('Čitanje prekinuto'));
+  };
+
+  reader.readAsDataURL(file);
+});
 
       const response = await fetch(uploadEndpoint, {
         method: 'POST',
