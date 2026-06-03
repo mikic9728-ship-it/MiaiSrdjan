@@ -99,7 +99,9 @@ async function uploadFiles() {
           resolve(reader.result.split(',')[1]);
         };
 
-        reader.onerror = reject;
+        reader.onerror = () => {
+  reject(new Error('Greška pri čitanju fajla: ' + file.name));
+};
 
         reader.readAsDataURL(file);
       });
